@@ -64,9 +64,69 @@
       <div class="outer">
         <section id="main">
   
-    <article id="post-My-New-Post" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-MM32下载烧录异常" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2020/06/09/My-New-Post/" class="article-date">
+    <a href="/2020/06/11/MM32%E4%B8%8B%E8%BD%BD%E7%83%A7%E5%BD%95%E5%BC%82%E5%B8%B8/" class="article-date">
+  <time datetime="2020-06-11T10:15:55.000Z" itemprop="datePublished">2020-06-11</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/06/11/MM32%E4%B8%8B%E8%BD%BD%E7%83%A7%E5%BD%95%E5%BC%82%E5%B8%B8/">MM32下载烧录异常</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>​        <em>最近有部分刚接触MM32 MCU的用户朋友们碰到了MCU无法进行下载的情况，然后跟我们反馈芯片有问题，最后经过技术工程师跟进，其实都是用户程序使用错误或者操作不规范等原因造成的，并非芯片有问题，小编表示很无奈很无辜(T＿T)。如果大家有碰到这种情况，请不要着急，我们今天这篇文章专门来讲解如何解决烧写失败的情况及有可能出现该类问题的原因。</em></p>
+<p>MM32无法进行烧写原因有多种情况，我们从硬件和软件两个方面分析：</p>
+<h1 id="硬件原因："><a href="#硬件原因：" class="headerlink" title="硬件原因："></a>硬件原因：</h1><p>1、  使用的调试器不支持调试下载MM32 MCU，IAR/KEIL上仿真器选择/配置不正确，MM32 MCU已经获得Segger官方认证。在Segger官网J-Link驱动6.40以上版本支持MM32 MCU系列，MM32 MCU支持如MM32-Link、U-link、J-Link、DAP-Link等使用SWD/JTAG（M3）等方式对内核、外设、FLASH进行访问。</p>
+<p>2、  MM32 MCU最小系统不完整，复位电路设计错误、MCU供电不正常等也会出现无法识别设备Device等情况。MM32 MCU支持宽电压2.0-5.5v供电，在用户自己设计产品PCB时，建议用户预留VCC、SWDIO、SWCLK、GND、NRST五线下载口方式。大家在进行电路设计时请参考我们demo板进行设计，demo板资料在我们官网链接如下：<a href="http://www.mm32mcu.com/getfile.aspx?id=386。" target="_blank" rel="noopener">http://www.mm32mcu.com/getfile.aspx?id=386。</a></p>
+<p>3、  SWD的两个引脚PA13、PA14引脚虚焊，外部硬件有上拉或下拉，与调试器连接不正确或未连通等情况。</p>
+<h1 id="软件原因："><a href="#软件原因：" class="headerlink" title="软件原因："></a>软件原因：</h1><p>1、  程序下载错误，MM32MCU有F、L、SPIN、W、P五大系列，对于不同的MCU我们有不同的库、启动文件与例程，大家下载程序前请查看自己MCU版本型号是否与要下载的程序对应，例如MM3F031C6T6分q版和n版，两个型号由于时钟域配置不同，程序不能直接共用。MM32MCU选型表料在官网链接如下：<a href="http://www.mm32mcu.com/getfile.aspx?id=955，库和例程等资料在官网链接如下：http://www.mm32mcu.com/download.aspx?cid=2542。" target="_blank" rel="noopener">http://www.mm32mcu.com/getfile.aspx?id=955，库和例程等资料在官网链接如下：http://www.mm32mcu.com/download.aspx?cid=2542。</a></p>
+<p>2、  MCU处于读/写保护状态，当MCU处于读保护状态时，FLASH空间处于写保护状态，此时无法使用SWD协议对内核、外设、FLASH进行访问，无法进行下载调试。</p>
+<p>3、  MCU处于低功耗状态，当MCU处于不同模式低功耗状态时，MCU的外设区域会处于断电状态，调试器识别MCU处于断电状态，无法进行下载调试。</p>
+<p>4、  SWD的两个引脚PA13、PA14被复用为其他功能或通用IO，PA13、PA14被配置为其他工作模式，此时PA13、PA14无法正常工作在SWD模式，调试器无法通过SWD协议进行下载调试。</p>
+<p>5、  程序下载过程中出错，由于下载速度和调试器版本特性等原因造成下载过程中出错，导致MCU进入HardFault状态（程序跑飞），此时无法进行下载调试。</p>
+<h2 id="下面以J-Link为例，列举两种具体表现形式与解决方案："><a href="#下面以J-Link为例，列举两种具体表现形式与解决方案：" class="headerlink" title="下面以J-Link为例，列举两种具体表现形式与解决方案："></a>下面以J-Link为例，列举两种具体表现形式与解决方案：</h2><h6 id="一、表现形式：下载报错No-Cortex-M-SW-Device-Found。此时调试器未识别到MCU（在keil中无法读到芯片ID），无法下载程序。"><a href="#一、表现形式：下载报错No-Cortex-M-SW-Device-Found。此时调试器未识别到MCU（在keil中无法读到芯片ID），无法下载程序。" class="headerlink" title="一、表现形式：下载报错No Cortex-M SW Device Found。此时调试器未识别到MCU（在keil中无法读到芯片ID），无法下载程序。"></a><strong>一、表现形式：</strong>下载报错No Cortex-M SW Device Found。此时调试器未识别到MCU（在keil中无法读到芯片ID），无法下载程序。</h6><p><img src="E:%5Ctest%5Cblog%5Csource%5Cpicture%5CNoFound.png" alt="NoFound"></p>
+<p><strong>可能原因：</strong>硬件问题：1、2、3；软件问题：1、2、3、4、5；</p>
+<p><strong>解决方式：</strong>先检查硬件，确保使用的调试器支持仿真调试MM32MCU，查看MM32MCU最小系统是否完整、复位电路（建议电阻上拉100k，接100nF电容到地）与MCU供电是否正常，测量PA13、PA14引脚是否虚焊，有无上拉或下拉，确认与调试器连接正确并联通。</p>
+<p>​        确认硬件无问题后，仿真方式选择SWD、速度设置建议在1M-10M以内，方法1：NRST脚拉低（按住复位键或短接复位电容，此时在KEIL中可读到ID），然后在IAR/KEIL中擦除程序（在keil的flash工具栏下的Erase操作），在IAR/KEIL出现进度条时释放NRST下拉电平，将芯片程序擦除后，重新上电就可以对MCU进行下载调试；方法2：将BOOT0接高，重新断电上电让MCU从SRAM启动，然后将芯片程序擦除，将BOOT0接低，重新上电就可以对MCU进行下载调试。</p>
+<h6 id="二、表现形式：下载报错Error：Flash-Download-failed-–-“Cortex-M0”。此时调试器能识别到MCU（在keil中可以读到芯片ID），可以擦除程序，无法下载程序。"><a href="#二、表现形式：下载报错Error：Flash-Download-failed-–-“Cortex-M0”。此时调试器能识别到MCU（在keil中可以读到芯片ID），可以擦除程序，无法下载程序。" class="headerlink" title="二、表现形式：下载报错Error：Flash Download failed – “Cortex - M0”。此时调试器能识别到MCU（在keil中可以读到芯片ID），可以擦除程序，无法下载程序。"></a>二、表现形式：下载报错Error：Flash Download failed – “Cortex - M0”。此时调试器能识别到MCU（在keil中可以读到芯片ID），可以擦除程序，无法下载程序。</h6><p><img src="E:%5Ctest%5Cblog%5Csource%5Cpicture%5C640.png" alt="640"></p>
+<p><strong>可能原因：</strong>软件问题：1、5；</p>
+<p>解决方式：方法1：调整下载速度，速度设置建议在1M-10M以内，可多调节几个速度试下，Download Fuction选择Erase Full Chip；方法2：如果还是无法下载则进行恢复出厂设置操作，资料在官网链接如下：<a href="http://www.mm32mcu.com/getfile.aspx?id=772。" target="_blank" rel="noopener">http://www.mm32mcu.com/getfile.aspx?id=772。</a></p>
+<h2 id="使用MM32-Link解决方式操作如下："><a href="#使用MM32-Link解决方式操作如下：" class="headerlink" title="使用MM32-Link解决方式操作如下："></a>使用MM32-Link解决方式操作如下：</h2><p>如果手上有MM32-Link则可以直接使用MM32-Link+Program来进行恢复操作，MM32-Link支持包与文档资料链接如下：<a href="http://www.mm32mcu.com/getfile.aspx?id=963。" target="_blank" rel="noopener">http://www.mm32mcu.com/getfile.aspx?id=963。</a></p>
+<p>1、参照文档连接MM32-Link与MM32MCU，建议使用五线下载方式：VCC、SWDIO、SWCLK、GND、NRST。</p>
+<p>2、打开MM32-Link Program，新建workspace，根据芯片型号新建project。</p>
+<p>3、确保ICP Program模式下，左下角MM32-Link处圆点为绿色（不为绿色时检查MM32-Link是否连接电脑并正确识别设备，为黄色时双击左下角圆点），芯片连接处圆点为黄色或绿色（为灰色时检查硬件连接并手动对芯片进行一次复位操作，拉低NRST引脚）。</p>
+<p>4、点击Erase Chip按钮，等待擦除完成即可重新下载。</p>
+<p><img src="E:%5Ctest%5Cblog%5Csource%5Cpicture%5CMM32LinkProgram.png" alt="MM32LinkProgram"></p>
+<p>以上方式下载均在我们官网例程上进行测试，如果有使用自己新建工程无法下载的情况，请检查自己工程配置与IDE版本，建议使用IAR版本在7.4以上、KEIL版本在5.13及以上，IAR与KEIL上新建MM32 MCU工程方式请参照官网应用文档，在KEIL下新建MM32 MCU工程官网链接如下：<a href="http://www.mm32mcu.com/getfile.aspx?id=341，在IAR下新建MM32" target="_blank" rel="noopener">http://www.mm32mcu.com/getfile.aspx?id=341，在IAR下新建MM32</a> MCU工程官网链接如下：<a href="http://www.mm32mcu.com/getfile.aspx?id=396。" target="_blank" rel="noopener">http://www.mm32mcu.com/getfile.aspx?id=396。</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://kcunion.github.io/2020/06/11/MM32%E4%B8%8B%E8%BD%BD%E7%83%A7%E5%BD%95%E5%BC%82%E5%B8%B8/" data-id="ckbamo0mz0000pcu125gd9pd3" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-MM32下载调试异常" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/06/09/MM32%E4%B8%8B%E8%BD%BD%E8%B0%83%E8%AF%95%E5%BC%82%E5%B8%B8/" class="article-date">
   <time datetime="2020-06-09T10:10:50.000Z" itemprop="datePublished">2020-06-09</time>
 </a>
     
@@ -78,7 +138,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2020/06/09/My-New-Post/">My New Post</a>
+      <a class="article-title" href="/2020/06/09/MM32%E4%B8%8B%E8%BD%BD%E8%B0%83%E8%AF%95%E5%BC%82%E5%B8%B8/">MM32下载调试异常</a>
     </h1>
   
 
@@ -86,39 +146,35 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>最近有部分刚接触MM32 MCU的用户朋友们碰到了MCU无法进行下载的情况，然后跟我们反馈芯片有问题，最后经过技术工程师跟进，其实都是用户程序使用错误或者操作不规范等原因造成的，并非芯片有问题，小编表示很无奈很无辜(T＿T)。如果大家有碰到这种情况，请不要着急，我们今天这篇文章专门来讲解如何解决烧写失败的情况及有可能出现该类问题的原因。</p>
+        <p>​        <em>最近有部分刚接触MM32 MCU的用户朋友们碰到了MCU无法进行下载的情况，然后跟我们反馈芯片有问题，最后经过技术工程师跟进，其实都是用户程序使用错误或者操作不规范等原因造成的，并非芯片有问题，小编表示很无奈很无辜(T＿T)。如果大家有碰到这种情况，请不要着急，我们今天这篇文章专门来讲解如何解决烧写失败的情况及有可能出现该类问题的原因。</em></p>
 <p>MM32无法进行烧写原因有多种情况，我们从硬件和软件两个方面分析：</p>
-<p>硬件原因：</p>
-<p>1、  使用的调试器不支持调试下载MM32 MCU，IAR/KEIL上仿真器选择/配置不正确，MM32 MCU已经获得Segger官方认证。在Segger官网J-Link驱动6.40以上版本支持MM32 MCU系列，MM32 MCU支持如MM32-Link、U-link、J-Link、DAP-Link等使用SWD/JTAG（M3）等方式对内核、外设、FLASH进行访问。</p>
+<h1 id="硬件原因："><a href="#硬件原因：" class="headerlink" title="硬件原因："></a>硬件原因：</h1><p>1、  使用的调试器不支持调试下载MM32 MCU，IAR/KEIL上仿真器选择/配置不正确，MM32 MCU已经获得Segger官方认证。在Segger官网J-Link驱动6.40以上版本支持MM32 MCU系列，MM32 MCU支持如MM32-Link、U-link、J-Link、DAP-Link等使用SWD/JTAG（M3）等方式对内核、外设、FLASH进行访问。</p>
 <p>2、  MM32 MCU最小系统不完整，复位电路设计错误、MCU供电不正常等也会出现无法识别设备Device等情况。MM32 MCU支持宽电压2.0-5.5v供电，在用户自己设计产品PCB时，建议用户预留VCC、SWDIO、SWCLK、GND、NRST五线下载口方式。大家在进行电路设计时请参考我们demo板进行设计，demo板资料在我们官网链接如下：<a href="http://www.mm32mcu.com/getfile.aspx?id=386。" target="_blank" rel="noopener">http://www.mm32mcu.com/getfile.aspx?id=386。</a></p>
 <p>3、  SWD的两个引脚PA13、PA14引脚虚焊，外部硬件有上拉或下拉，与调试器连接不正确或未连通等情况。</p>
-<p>软件原因：</p>
-<p>1、  程序下载错误，MM32MCU有F、L、SPIN、W、P五大系列，对于不同的MCU我们有不同的库、启动文件与例程，大家下载程序前请查看自己MCU版本型号是否与要下载的程序对应，例如MM3F031C6T6分q版和n版，两个型号由于时钟域配置不同，程序不能直接共用。MM32MCU选型表料在官网链接如下：<a href="http://www.mm32mcu.com/getfile.aspx?id=955，库和例程等资料在官网链接如下：http://www.mm32mcu.com/download.aspx?cid=2542。" target="_blank" rel="noopener">http://www.mm32mcu.com/getfile.aspx?id=955，库和例程等资料在官网链接如下：http://www.mm32mcu.com/download.aspx?cid=2542。</a></p>
+<h1 id="软件原因："><a href="#软件原因：" class="headerlink" title="软件原因："></a>软件原因：</h1><p>1、  程序下载错误，MM32MCU有F、L、SPIN、W、P五大系列，对于不同的MCU我们有不同的库、启动文件与例程，大家下载程序前请查看自己MCU版本型号是否与要下载的程序对应，例如MM3F031C6T6分q版和n版，两个型号由于时钟域配置不同，程序不能直接共用。MM32MCU选型表料在官网链接如下：<a href="http://www.mm32mcu.com/getfile.aspx?id=955，库和例程等资料在官网链接如下：http://www.mm32mcu.com/download.aspx?cid=2542。" target="_blank" rel="noopener">http://www.mm32mcu.com/getfile.aspx?id=955，库和例程等资料在官网链接如下：http://www.mm32mcu.com/download.aspx?cid=2542。</a></p>
 <p>2、  MCU处于读/写保护状态，当MCU处于读保护状态时，FLASH空间处于写保护状态，此时无法使用SWD协议对内核、外设、FLASH进行访问，无法进行下载调试。</p>
 <p>3、  MCU处于低功耗状态，当MCU处于不同模式低功耗状态时，MCU的外设区域会处于断电状态，调试器识别MCU处于断电状态，无法进行下载调试。</p>
 <p>4、  SWD的两个引脚PA13、PA14被复用为其他功能或通用IO，PA13、PA14被配置为其他工作模式，此时PA13、PA14无法正常工作在SWD模式，调试器无法通过SWD协议进行下载调试。</p>
 <p>5、  程序下载过程中出错，由于下载速度和调试器版本特性等原因造成下载过程中出错，导致MCU进入HardFault状态（程序跑飞），此时无法进行下载调试。</p>
-<p>下面以J-Link为例，列举两种具体表现形式与解决方案：</p>
-<p>一、表现形式：下载报错No Cortex-M SW Device Found。此时调试器未识别到MCU（在keil中无法读到芯片ID），无法下载程序。</p>
-<p>可能原因：硬件问题：1、2、3；软件问题：1、2、3、4、5；</p>
-<p>解决方式：先检查硬件，确保使用的调试器支持仿真调试MM32MCU，查看MM32MCU最小系统是否完整、复位电路（建议电阻上拉100k，接100nF电容到地）与MCU供电是否正常，测量PA13、PA14引脚是否虚焊，有无上拉或下拉，确认与调试器连接正确并联通。</p>
-<p>确认硬件无问题后，仿真方式选择SWD、速度设置建议在1M-10M以内，方法1：NRST脚拉低（按住复位键或短接复位电容，此时在KEIL中可读到ID），然后在IAR/KEIL中擦除程序（在keil的flash工具栏下的Erase操作），在IAR/KEIL出现进度条时释放NRST下拉电平，将芯片程序擦除后，重新上电就可以对MCU进行下载调试；方法2：将BOOT0接高，重新断电上电让MCU从SRAM启动，然后将芯片程序擦除，将BOOT0接低，重新上电就可以对MCU进行下载调试。</p>
-<p>二、表现形式：下载报错Error：Flash Download failed – “Cortex - M0”。此时调试器能识别到MCU（在keil中可以读到芯片ID），可以擦除程序，无法下载程序。</p>
-<p>可能原因：软件问题：1、5；</p>
+<h2 id="下面以J-Link为例，列举两种具体表现形式与解决方案："><a href="#下面以J-Link为例，列举两种具体表现形式与解决方案：" class="headerlink" title="下面以J-Link为例，列举两种具体表现形式与解决方案："></a>下面以J-Link为例，列举两种具体表现形式与解决方案：</h2><h6 id="一、表现形式：下载报错No-Cortex-M-SW-Device-Found。此时调试器未识别到MCU（在keil中无法读到芯片ID），无法下载程序。"><a href="#一、表现形式：下载报错No-Cortex-M-SW-Device-Found。此时调试器未识别到MCU（在keil中无法读到芯片ID），无法下载程序。" class="headerlink" title="一、表现形式：下载报错No Cortex-M SW Device Found。此时调试器未识别到MCU（在keil中无法读到芯片ID），无法下载程序。"></a><strong>一、表现形式：</strong>下载报错No Cortex-M SW Device Found。此时调试器未识别到MCU（在keil中无法读到芯片ID），无法下载程序。</h6><p><img src="E:%5Ctest%5Cblog%5Csource%5Cpicture%5CNoFound.png" alt="NoFound"></p>
+<p><strong>可能原因：</strong>硬件问题：1、2、3；软件问题：1、2、3、4、5；</p>
+<p><strong>解决方式：</strong>先检查硬件，确保使用的调试器支持仿真调试MM32MCU，查看MM32MCU最小系统是否完整、复位电路（建议电阻上拉100k，接100nF电容到地）与MCU供电是否正常，测量PA13、PA14引脚是否虚焊，有无上拉或下拉，确认与调试器连接正确并联通。</p>
+<p>​        确认硬件无问题后，仿真方式选择SWD、速度设置建议在1M-10M以内，方法1：NRST脚拉低（按住复位键或短接复位电容，此时在KEIL中可读到ID），然后在IAR/KEIL中擦除程序（在keil的flash工具栏下的Erase操作），在IAR/KEIL出现进度条时释放NRST下拉电平，将芯片程序擦除后，重新上电就可以对MCU进行下载调试；方法2：将BOOT0接高，重新断电上电让MCU从SRAM启动，然后将芯片程序擦除，将BOOT0接低，重新上电就可以对MCU进行下载调试。</p>
+<h6 id="二、表现形式：下载报错Error：Flash-Download-failed-–-“Cortex-M0”。此时调试器能识别到MCU（在keil中可以读到芯片ID），可以擦除程序，无法下载程序。"><a href="#二、表现形式：下载报错Error：Flash-Download-failed-–-“Cortex-M0”。此时调试器能识别到MCU（在keil中可以读到芯片ID），可以擦除程序，无法下载程序。" class="headerlink" title="二、表现形式：下载报错Error：Flash Download failed – “Cortex - M0”。此时调试器能识别到MCU（在keil中可以读到芯片ID），可以擦除程序，无法下载程序。"></a>二、表现形式：下载报错Error：Flash Download failed – “Cortex - M0”。此时调试器能识别到MCU（在keil中可以读到芯片ID），可以擦除程序，无法下载程序。</h6><p><img src="E:%5Ctest%5Cblog%5Csource%5Cpicture%5C640.png" alt="640"></p>
+<p><strong>可能原因：</strong>软件问题：1、5；</p>
 <p>解决方式：方法1：调整下载速度，速度设置建议在1M-10M以内，可多调节几个速度试下，Download Fuction选择Erase Full Chip；方法2：如果还是无法下载则进行恢复出厂设置操作，资料在官网链接如下：<a href="http://www.mm32mcu.com/getfile.aspx?id=772。" target="_blank" rel="noopener">http://www.mm32mcu.com/getfile.aspx?id=772。</a></p>
-<p>下面介绍使用MM32-Link的解决方案：</p>
-<p>如果手上有MM32-Link则可以直接使用MM32-Link+Program来进行恢复操作，MM32-Link支持包与文档资料链接如下：<a href="http://www.mm32mcu.com/getfile.aspx?id=963。" target="_blank" rel="noopener">http://www.mm32mcu.com/getfile.aspx?id=963。</a></p>
-<p>使用MM32-Link解决方式操作如下：</p>
+<h2 id="使用MM32-Link解决方式操作如下："><a href="#使用MM32-Link解决方式操作如下：" class="headerlink" title="使用MM32-Link解决方式操作如下："></a>使用MM32-Link解决方式操作如下：</h2><p>如果手上有MM32-Link则可以直接使用MM32-Link+Program来进行恢复操作，MM32-Link支持包与文档资料链接如下：<a href="http://www.mm32mcu.com/getfile.aspx?id=963。" target="_blank" rel="noopener">http://www.mm32mcu.com/getfile.aspx?id=963。</a></p>
 <p>1、参照文档连接MM32-Link与MM32MCU，建议使用五线下载方式：VCC、SWDIO、SWCLK、GND、NRST。</p>
 <p>2、打开MM32-Link Program，新建workspace，根据芯片型号新建project。</p>
 <p>3、确保ICP Program模式下，左下角MM32-Link处圆点为绿色（不为绿色时检查MM32-Link是否连接电脑并正确识别设备，为黄色时双击左下角圆点），芯片连接处圆点为黄色或绿色（为灰色时检查硬件连接并手动对芯片进行一次复位操作，拉低NRST引脚）。</p>
 <p>4、点击Erase Chip按钮，等待擦除完成即可重新下载。</p>
+<p><img src="E:%5Ctest%5Cblog%5Csource%5Cpicture%5CMM32LinkProgram.png" alt="MM32LinkProgram"></p>
 <p>以上方式下载均在我们官网例程上进行测试，如果有使用自己新建工程无法下载的情况，请检查自己工程配置与IDE版本，建议使用IAR版本在7.4以上、KEIL版本在5.13及以上，IAR与KEIL上新建MM32 MCU工程方式请参照官网应用文档，在KEIL下新建MM32 MCU工程官网链接如下：<a href="http://www.mm32mcu.com/getfile.aspx?id=341，在IAR下新建MM32" target="_blank" rel="noopener">http://www.mm32mcu.com/getfile.aspx?id=341，在IAR下新建MM32</a> MCU工程官网链接如下：<a href="http://www.mm32mcu.com/getfile.aspx?id=396。" target="_blank" rel="noopener">http://www.mm32mcu.com/getfile.aspx?id=396。</a></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://kcunion.github.io/2020/06/09/My-New-Post/" data-id="ckb7rppdl0000d4u10fcl8oox" class="article-share-link">Share</a>
+      <a data-url="https://kcunion.github.io/2020/06/09/MM32%E4%B8%8B%E8%BD%BD%E8%B0%83%E8%AF%95%E5%BC%82%E5%B8%B8/" data-id="ckbamo0n70001pcu12go5ggws" class="article-share-link">Share</a>
       
       
     </footer>
@@ -208,7 +264,11 @@
       <ul>
         
           <li>
-            <a href="/2020/06/09/My-New-Post/">My New Post</a>
+            <a href="/2020/06/11/MM32%E4%B8%8B%E8%BD%BD%E7%83%A7%E5%BD%95%E5%BC%82%E5%B8%B8/">MM32下载烧录异常</a>
+          </li>
+        
+          <li>
+            <a href="/2020/06/09/MM32%E4%B8%8B%E8%BD%BD%E8%B0%83%E8%AF%95%E5%BC%82%E5%B8%B8/">MM32下载调试异常</a>
           </li>
         
           <li>
